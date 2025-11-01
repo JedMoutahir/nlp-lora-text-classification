@@ -30,9 +30,16 @@ python infer.py \
   --model_dir outputs/tiny-bert \
   --texts "I love this!" "This is boring and bad."
 ```
-## Scaling up 
+
+## Scale Up (GPU, larger model & dataset)
+Use a bigger model, e.g. distilbert-base-uncased or roberta-base.
+
+Switch to a public dataset (e.g., SST-2) by replacing --train_csv/--eval_csv with a datasets loader in train.py (see comments).
+
+Enable GPU with Accelerate:
+
 ```bash
-# Train on GPU, bigger model and dataset (SST-2)
+accelerate config
 accelerate launch train.py \
   --model_name distilbert-base-uncased \
   --train_csv /path/to/sst2_train.csv \
@@ -42,3 +49,16 @@ accelerate launch train.py \
   --epochs 3 --batch_size 32 --lr 2e-4 \
   --lora_r 16 --lora_alpha 32 --lora_dropout 0.05 \
   --bf16 True --gradient_checkpointing True
+```
+
+Use --per_device_train_batch_size, --gradient_accumulation_steps to fit memory.
+
+For multi-GPU: accelerate launch --multi_gpu train.py ....
+
+## Repo I/O
+Input: CSV with columns text, label (int class id).
+
+Output: --output_dir with LoRA adapters merged weights for inference.
+
+## Notes
+The tiny dataset is only for tests. For real training, use a proper dataset (SST-2, AG News, etc.).
